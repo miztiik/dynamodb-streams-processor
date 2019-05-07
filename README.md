@@ -1,21 +1,19 @@
-# AWS Serverless CloudWatch Logs Retention Policy Enforcer
+# AWS DynamoDB Stream Event Processor
 
-This lambda function adds a retention policy to CloudWatch log group[s] that does *not* have an retention policy. You can use the override feature to set new values on existing policies, Say for example you have decided to retain logs longer now, from 14 to 21 days.
+Lets say, we have to do some action for every item added to DynamoDB. We can use _DynamoDB Streams_ along with Lambda to achieve the same.
 
 ![AWS Serverless CloudWatch Logs Retention Policy Enforcer](images/miztiik-serverless-cloudwatch-log-retention-policy.png)
 
 #### Follow this article in [Youtube](https://youtube.com/c/valaxytechnologies)
 
-
-0. # Prerequisites
+0. ### Prerequisites
 
 - AWS CLI pre-configured
-- Log Retention Days: Defaults to 14 days
 
 1. ## Clone the repository
 
    ```sh
-   git clone https://github.com/miztiik/serverless-cloudwatch-log-retention.git
+   git clone https://github.com/miztiik/dynamodb-streams-processor.git
    ```
 
 1. ## Customize the deployment
@@ -24,14 +22,13 @@ This lambda function adds a retention policy to CloudWatch log group[s] that doe
   
     ```sh
     AWS_PROFILE="default"
-    BUCKET_NAME="sam-templates-010" # bucket must exist in the SAME region the deployment is taking place
-    TEMPLATE_NAME="serverless-cloudwatch-log-retention-policy.yaml"
-    STACK_NAME="set-cloudwatch-logs-retention"
+    BUCKET_NAME="sam-templates-011" # bucket must exist in the SAME region the deployment is taking place
+    SERVICE_NAME="dynamodb-stream-processor"
+    TEMPLATE_NAME="${SERVICE_NAME}.yaml"
+    STACK_NAME="${SERVICE_NAME}"
     OUTPUT_DIR="./outputs/"
     PACKAGED_OUTPUT_TEMPLATE="${OUTPUT_DIR}${STACK_NAME}-packaged-template.yaml"
     ```
-
-    For the `RETENTION_IN_DAYS`, you can customize this in the code in `./src/cw-log-retention.py` or post deployment in the Lambda environment variable.
 
 1. ## Deployment
 
@@ -42,22 +39,19 @@ This lambda function adds a retention policy to CloudWatch log group[s] that doe
     ./helper_scripts/deploy.sh
     ```
   
-1. ## Usage
+1. ## Test Stream Processor
 
-    The function will automatically trigger once every 24 hours via a CloudWatch Event. Here is an example of the output from the Lambda function,
+    Insert a simple item to the table, either from the GUI/CLI
 
     ```json
-    {
-      "status": true,
-      "logs_metadata": [
-        {
-          "logGroupName": "/aws/lambda/set-cloudwatch-logs-reten-CloudWatchLogRetentionFu-1SABSGG9H6XV1",
-          "retentionInDays": 5,
-          "region": "us-east-1"
-        }
-      ],
-      "total_policies_set": 1
-    }
+    ddb_name="dynamodb-stream-processor-DynamoDBTable-N8Z22Q0GILUH"
+    for i in {1..10}
+     do
+      val=${RANDOM}
+      aws dynamodb put-item \
+        --table-name "${ddb_name}" \
+        --item '{ "Username": {"S":"User_'${i}'"},"Timestamp": {"S":"'$(date +"%d/%m/%Y-%H:%M:%S")'"},"Message":{"S":"Mystique_Msg_'${val}'"} }'
+     done
     ```
 
 ### Contact Us
