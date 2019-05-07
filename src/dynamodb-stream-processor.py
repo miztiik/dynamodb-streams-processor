@@ -31,47 +31,30 @@ def set_global_vars():
 
 
 def lambda_handler(event, context):
-    resp = {'status': False, "error_message" : '' }
-    global_vars = set_global_vars()
+    resp = {'status': False, 'TotalItems': {} , 'Items': [] }
 
-    # for r in events():
-    logger.info(f"Event:{event}")
+    # global_vars = set_global_vars()
 
-    return event
+    if not 'Records' in event:
+        resp = {'status': False, "error_message" : 'No Records found in Event' }
+        return resp
+    
+    logger.debug(f"Event:{event}")
+    for r in event.get('Records'):
+        if r.get('eventName') == "INSERT":
+            d = {}
+            d['Username'] = r['dynamodb']['NewImage']['Username']['S']
+            d['Timestamp'] = r['dynamodb']['NewImage']['Timestamp']['S']
+            d['Message'] = r['dynamodb']['NewImage']['Message']['S']
+            resp['Items'].append(d)
+
+    if resp.get('Items'):
+        resp['status'] = True
+        resp['TotalItems'] = { 'Received': len( event.get('Records') ) , 'Processed': len( resp.get('Items') ) }
+    
+    logger.info(f"resp:{resp}")
+    return resp
 
 
 if __name__ == '__main__':
     lambda_handler(None, None)
-
-
-
-
-"""
-var sns = new AWS.SNS();
-
-exports.handler = (event, context, callback) => {
-
-    event.Records.forEach((record) => {
-        console.log('Stream record: ', JSON.stringify(record, null, 2));
-        
-        if (record.eventName == 'INSERT') {
-            var who = JSON.stringify(record.dynamodb.NewImage.Username.S);
-            var when = JSON.stringify(record.dynamodb.NewImage.Timestamp.S);
-            var what = JSON.stringify(record.dynamodb.NewImage.Message.S);
-            var params = {
-                Subject: 'A new bark from ' + who, 
-                Message: 'Woofer user ' + who + ' barked the following at ' + when + ':\n\n ' + what,
-                TopicArn: 'arn:aws:sns:region:accountID:wooferTopic'
-            };
-            sns.publish(params, function(err, data) {
-                if (err) {
-                    console.error("Unable to send message. Error JSON:", JSON.stringify(err, null, 2));
-                } else {
-                    console.log("Results from sending message: ", JSON.stringify(data, null, 2));
-                }
-            });
-        }
-    });
-    callback(null, `Successfully processed ${event.Records.length} records.`);
-}; 
-"""
