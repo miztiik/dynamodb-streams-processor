@@ -2,7 +2,7 @@
 
 Lets say, we have to do some action for every item added to DynamoDB. We can use _DynamoDB Streams_ along with Lambda to achieve the same.
 
-![AWS Serverless CloudWatch Logs Retention Policy Enforcer](images/miztiik-serverless-cloudwatch-log-retention-policy.png)
+![dynamodb-streams-processor](images/miztiik-dynamo-stream-processor.png)
 
 #### Follow this article in [Youtube](https://youtube.com/c/valaxytechnologies)
 
