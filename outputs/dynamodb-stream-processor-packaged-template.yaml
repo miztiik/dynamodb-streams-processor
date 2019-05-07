@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'AWS Lambda trigger to process new items in a stream from a DynamoDB
+  table.
+
+  '
+Parameters:
+  enableDEBUGGER:
+    Description: Do you want to enable logging.
+    Default: false
+    Type: String
+    AllowedValues:
+    - true
+    - false
+    ConstraintDescription: must be boolean.
+Resources:
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: Username
+        AttributeType: S
+      - AttributeName: Timestamp
+        AttributeType: S
+      KeySchema:
+      - AttributeName: Username
+        KeyType: HASH
+      - AttributeName: Timestamp
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+  DynamoDBStreamProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: An AWS Lambda trigger to process a stream from a DynamoDB table.
+      Handler: dynamodb-stream-processor.lambda_handler
+      Runtime: python3.7
+      CodeUri: s3://sam-templates-011/9203e73b47a351f43e786bc24a017365
+      Environment:
+        Variables:
+          ENABLE_DEBUG:
+            Ref: enableDEBUGGER
+      MemorySize: 128
+      Timeout: 60
+      Events:
+        Stream:
+          Type: DynamoDB
+          Properties:
+            Stream:
+              Fn::GetAtt:
+              - DynamoDBTable
+              - StreamArn
+            BatchSize: 100
+            StartingPosition: TRIM_HORIZON
+      Policies:
+      - AWSLambdaDynamoDBExecutionRole
