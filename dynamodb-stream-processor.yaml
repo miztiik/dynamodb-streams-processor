@@ -7,9 +7,9 @@ Description: >
 Parameters:
   enableDEBUGGER:
     Description: Do you want to enable logging.
-    Default: false
+    Default: "False"
     Type: String
-    AllowedValues: [true, false]
+    AllowedValues: ["True", "False"]
     ConstraintDescription: must be boolean.
 
 Resources:
@@ -44,13 +44,13 @@ Resources:
           ENABLE_DEBUG:
             Ref: enableDEBUGGER
       MemorySize: 128
-      Timeout: 60
+      Timeout: 3
       Events:
         Stream:
           Type: DynamoDB
           Properties:
             Stream: !GetAtt DynamoDBTable.StreamArn
-            BatchSize: 100
+            BatchSize: 3 # How many items we want to process at once
             StartingPosition: TRIM_HORIZON
       Policies:
         - AWSLambdaDynamoDBExecutionRole # Managed Policy
