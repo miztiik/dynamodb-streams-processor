@@ -10,7 +10,7 @@ Parameters:
     Default: "False"
     Type: String
     AllowedValues: ["True", "False"]
-    ConstraintDescription: must be boolean.
+    ConstraintDescription: Must be boolean.
 
 Resources:
   DynamoDBTable:
