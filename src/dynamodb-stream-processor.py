@@ -45,7 +45,8 @@ def lambda_handler(event, context):
             d = {}
             d['Username'] = r['dynamodb']['NewImage']['Username']['S']
             d['Timestamp'] = r['dynamodb']['NewImage']['Timestamp']['S']
-            d['Message'] = r['dynamodb']['NewImage']['Message']['S']
+            if 'Message' in r['dynamodb']['NewImage']:
+                d['Message'] = r['dynamodb']['NewImage']['Message']['S']
             resp['Items'].append(d)
 
     if resp.get('Items'):
